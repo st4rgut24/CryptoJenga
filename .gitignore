@@ -1,0 +1,26 @@
+#game folders
+TowerStack/My\ Project/Library
+TowerStack/My\ Project/Library/Temp
+"TowerStack/My Project/Library"
+"TowerStack/My Project/Temp"
+TowerStack/My\ Project/Temp
+"TowerStack/My Project/Library/Temp"
+TowerStack/My Project/web3glbuilds
+TowerStack/My\ Project/web3glbuilds
+
+node_modules
+.env
+coverage
+coverage.json
+typechain
+
+#Hardhat files
+cache
+artifacts
+
+#db and upload folders
+Week4/db
+Week4/upload
+
+#game
+NodeServerV2/node_modules
