@@ -20,7 +20,7 @@ public class LobbyContract : MonoBehaviour
 
         try
         {
-            string usdWeiTicketPrice = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.contract, CryptoJenga.abi, method, args);
+            string usdWeiTicketPrice = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.gameAddress, CryptoJenga.gameAbi, method, args);
             Debug.Log("usd wei tikcet price " + usdWeiTicketPrice);
             return "$" + convertWeiStringToEth(usdWeiTicketPrice);
 
@@ -29,6 +29,32 @@ public class LobbyContract : MonoBehaviour
         {
             Debug.Log("Error: " + e.Message);
             return ""; // closed game by default
+        }
+    }
+
+    async public Task<bool> startGame()
+    {
+        // smart contract method to call
+        string method = "startGame";
+
+        // array of arguments for contract
+        string args = "[]";
+        string gasLimit = "";
+        // gas price OPTIONAL
+        string gasPrice = "";
+        string value = "0";
+        try
+        {
+            Debug.Log("starting game");
+            string response = await Web3GL.SendContract(method, CryptoJenga.gameAbi, CryptoJenga.gameAddress, args, value, gasLimit, gasPrice);
+
+            Debug.Log(response);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.Log("error starting game " + e.Message);
+            return false;
         }
     }
 
@@ -42,7 +68,7 @@ public class LobbyContract : MonoBehaviour
 
         try
         {
-            string gameState = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.contract, CryptoJenga.abi, method, args);
+            string gameState = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.gameAddress, CryptoJenga.gameAbi, method, args);
 
             switch (gameState)
             {
@@ -78,7 +104,7 @@ public class LobbyContract : MonoBehaviour
         {
             Debug.Log("player address " + playerAddress);
             string args = "[\"" + playerAddress + "\"]";
-            string isJoined = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.contract, CryptoJenga.abi, method, args);
+            string isJoined = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.gameAddress, CryptoJenga.gameAbi, method, args);
             Debug.Log("is joined " + isJoined);
             return isJoined == "true";
         }
@@ -100,7 +126,7 @@ public class LobbyContract : MonoBehaviour
 
         try
         {
-            WeiAdmissionPrice = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.contract, CryptoJenga.abi, method, args);
+            WeiAdmissionPrice = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.gameAddress, CryptoJenga.gameAbi, method, args);
             Debug.Log("Ticket price is " + WeiAdmissionPrice);
 
             // if # is less  than or equal to 18 places pad it with zeros in front to 18 places
@@ -160,7 +186,7 @@ public class LobbyContract : MonoBehaviour
         //string response = await Web3GL.SendContract(method, CryptoJenga.abi, CryptoJenga.contract, args, "100000", gasLimit, gasPrice);
         try
         {
-            string response = await Web3GL.SendContract(method, CryptoJenga.abi, CryptoJenga.contract, args, WeiAdmissionPrice, gasLimit, gasPrice);
+            string response = await Web3GL.SendContract(method, CryptoJenga.gameAbi, CryptoJenga.gameAddress, args, WeiAdmissionPrice, gasLimit, gasPrice);
 
             Debug.Log(response);
             return true;

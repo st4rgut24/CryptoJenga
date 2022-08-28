@@ -27,7 +27,7 @@ public class GameContract : MonoBehaviour
 
         string value = "0";
 
-        string response = await Web3GL.SendContract(method, CryptoJenga.abi, CryptoJenga.contract, args, value, gasLimit, gasPrice);
+        string response = await Web3GL.SendContract(method, CryptoJenga.gameAbi, CryptoJenga.gameAddress, args, value, gasLimit, gasPrice);
         Debug.Log(response);
     }
 
@@ -37,7 +37,7 @@ public class GameContract : MonoBehaviour
         // array of arguments for contract
         string args = "[\""+address+"\"]";
         // connects to user's browser wallet to call a transaction
-        string response = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.contract, CryptoJenga.abi, method, args);
+        string response = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.gameAddress, CryptoJenga.gameAbi, method, args);
         // display response in game
         print("Tokens left " + response);
         return response;
@@ -49,7 +49,7 @@ public class GameContract : MonoBehaviour
         // array of arguments for contract
         string args = "[]";
         // connects to user's browser wallet to call a transaction
-        string response = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.contract, CryptoJenga.abi, method, args);
+        string response = await EVM.Call(CryptoJenga.chain, CryptoJenga.network, CryptoJenga.gameAddress, CryptoJenga.gameAbi, method, args);
         // display response in game
         print("Player addresses " + response);
         List<string> playerAddresses = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(response);

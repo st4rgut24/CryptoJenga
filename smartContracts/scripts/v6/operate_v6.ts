@@ -48,15 +48,12 @@ async function main()
     );
   
     const cryptoJengaContract = (await cryptoJengaFactory.deploy(
-      priceFeedAddress,
-      vrfCoordinator,
       ethers.utils.parseEther(linkFee.toFixed(18)),
       keyhash,
       ethers.utils.parseEther(ticketPriceInUSD.toFixed(18)),
       roundDuration, // round duration 1 mins
       roundCount, // number of round
-      maxBets,
-      subscriptionId
+      maxBets
     )) as CryptoJengaV5;
     
     console.log("Awaiting confirmations");

@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 7c3db5c0c00744237a105eab69432f89
+  - enabled: 1
+    path: Assets/Web3Unity/Scenes/ContractForm.unity
+    guid: 3d15a9d06340c4aa3ad1cfddda23d0bc
   m_configObjects: {}

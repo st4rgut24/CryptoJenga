@@ -5,21 +5,32 @@ import { readFile } from 'fs/promises';
 import { EventsManager } from './EventsManager.js';
 
 export class ContractManager { 
-     constructor(web3){
-      const contract = this.setContract(web3);
+    web3;
+    GameContractAbi;
+    EventMgr;
+    
+     constructor(web3, _EventMgr){
+      this.web3 = web3;
+      this.EventMgr = _EventMgr;
+
+      this.getContractAbi();
      }
- 
-     async setContract(web3, wss) {
-        const GameContract = JSON.parse(
-            await readFile(
-              new URL('../contracts/cryptoJenga_v6.json', import.meta.url)
-            )
-          );
-        const GameContractDeployed = new web3.eth.Contract(
-          GameContract.abi,
-          "0x0f24dB4c0490107027abf0C8e5042103E99e147e"
+
+     async getContractAbi() {
+      this.GameContractAbi = JSON.parse(
+        await readFile(
+          new URL('../contracts/cryptoJenga_v6.json', import.meta.url)
+        )
+      ); 
+     }
+
+     // called after a game has been created or joined by a player
+     // the address comes from a ws message received from unity client
+     setContract(contractAddress) {
+        const GameContractDeployed = new this.web3.eth.Contract(
+          this.GameContractAbi,
+          contractAddress
         );
-        console.log(`address deployed to ${GameContractDeployed.options.address}`);
-        const EventsMgr = new EventsManager(GameContractDeployed);
+        this.EventMgr.setContractListeners(GameContractDeployed);
       }     
  }

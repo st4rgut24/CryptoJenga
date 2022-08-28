@@ -15,17 +15,24 @@ public class Lobby : MonoBehaviour
     public GameObject AdmitButton;
     public LobbyContract lobbyContract;
     public Text PriceText;
+    public Button StartGameBtn;
 
     private async void Start()
     {
         PriceText.text = await lobbyContract.getUSDTicketPrice();
         gameState = await lobbyContract.getGameState();
+        StartGameBtn.gameObject.SetActive(gameState == "Initialized");
         string account = PlayerPrefs.GetString("Account");
         isPlayerJoined = await lobbyContract.isPlayerJoined(account);
         if (isGameOpenForPlayer())
         {
             AdmitButton.SetActive(true);
         }
+    }
+
+    public async void onStartGame()
+    {
+        await lobbyContract.startGame();
     }
 
     public void onGameState(string currentState)

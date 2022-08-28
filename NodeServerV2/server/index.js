@@ -21,6 +21,9 @@ wss.on('connection', function(ws) {
   NewTest.setWebSocket(wss);
 
   ws.on('message', function(data) {
+    // set game address
+    console.log("setting game address of new game inst " + data);
+    StackTowerWeb3.ContractMgr.setWebSocket(data);
   });
 
   ws.on('close', function() {

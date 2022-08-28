@@ -31,6 +31,14 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
     uint256 public poolRewards;
     uint256 public finalBalance;
     uint256 public testUpkeepCounter = 0;
+    string public gameCode;
+
+    address _priceFeedAddress = 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e;
+    address _vrfCoordinator = 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D;
+    bytes32 keyhash = 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
+    GameFactoryInterface gameFactory;
+
+
     // tolerance for determining if ticket purchase goes through 
     uint256 private slippage = 1000000;
 
@@ -59,9 +67,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
     }
 
     GAME_STATE public game_state;
-    uint256 public LinkFee;
-    uint64 s_subscriptionId;
-    bytes32 public keyhash;
+    uint64 s_subscriptionId = 72;
 
     uint16 requestConfirmations = 3;
     uint32 numWords =  2;
@@ -80,28 +86,24 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
     event Test(address _testAddress);
 
     constructor(
-        address _priceFeedAddress,
-        address _vrfCoordinator,
-        uint256 _fee,
-        bytes32 _keyhash,
         uint256 _USDTicketPrice, // to 18 places
         uint256 _roundDuration,
         uint256 _totalRounds,
-        uint256 _maxBets,
-        uint64 _subscriptionId
+        uint256 _maxBets, 
+        string memory _gameCode,
+        GameFactoryInterface gameFactoryAddress
     ) VRFConsumerBaseV2(_vrfCoordinator){
         USDTicketPrice = _USDTicketPrice;
         ethUsdPriceFeed = AggregatorV3Interface(_priceFeedAddress);
         game_state = GAME_STATE.INITIALIZED;
-        LinkFee = _fee;
         MaxBets = _maxBets;
-        keyhash = _keyhash;
-        s_subscriptionId = _subscriptionId;
         LINKTOKEN = LinkTokenInterface(link_token_contract);
 
         RoundDuration = _roundDuration;
         TotalRounds = _totalRounds;
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);      
+        gameFactory = gameFactoryAddress;
+        gameCode = _gameCode;
     }
 
     // get the state of the game
@@ -165,9 +167,9 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         emit BetMade(msg.sender, currentRoundBetCount+betSize, remainingBets);
     }
 
-    function startGame() public onlyOwner {
+    function startGame() public {
         require(game_state == GAME_STATE.INITIALIZED, "Can't start a new game");
-        require(participants.length > 0, "There must be players in the game"); // <-- dont start game unless more than 1 player
+        require(participants.length > 1, "There must be at least two players in the game"); // <-- dont start game unless more than 1 player
         game_state = GAME_STATE.OPEN;
         RoundStartTime = block.timestamp;
         CurrentRound = 1;
@@ -278,6 +280,8 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
 
 
             (bool success, ) = gameWinner.call{value: poolRewards}("");
+            require(success, "The funds were not transferred at the end of the game");
+            gameFactory.removeGame(gameCode);
             emit RevealEnded(CurrentRound);
             emit GameState("Closed");
             emit GameEnded(gameWinner, totalWinnings);
@@ -333,5 +337,50 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
 
     function getPlayerAddresses()public view returns( address payable [] memory){
         return participants;
+    }
+}
+
+interface GameFactoryInterface {
+    function removeGame(string memory _gameCode) external; 
+    function createGame(
+        uint256 _USDTicketPrice, // to 18 places
+        uint256 _roundDuration,
+        uint256 _totalRounds,
+        uint256 _maxBets, 
+        string memory _gameCode
+    ) external returns (cryptoJengaV6);  
+    function getGameAddress(string memory _gameCode) external returns (address);
+}
+
+contract GameFactory is GameFactoryInterface{
+    mapping(string=>address) public games;
+
+    function createGame(
+        uint256 _USDTicketPrice, // to 18 places
+        uint256 _roundDuration,
+        uint256 _totalRounds,
+        uint256 _maxBets, 
+        string memory _gameCode
+    )
+        external override
+        returns (cryptoJengaV6)
+    {
+        require(games[_gameCode] == address(0x0000000000000000), "That game code is already in use");
+        // Create a new `CryptoJenga` contract and return its address.
+        // From the JavaScript side, the return type
+        // of this function is `address`, as this is
+        // the closest type available in the ABI.
+        cryptoJengaV6 gameAddress = new cryptoJengaV6(_USDTicketPrice, _roundDuration, _totalRounds, _maxBets, _gameCode, this);
+        games[_gameCode] = address(gameAddress);
+        return gameAddress;
+    }
+
+    function getGameAddress(string memory _gameCode) external override returns (address) {
+        require(games[_gameCode] != address(0x0000000000000000), "That game code does not exist");
+        return games[_gameCode];
+    }
+
+    function removeGame(string memory _gameCode) external override {
+        delete games[_gameCode];
     }
 }

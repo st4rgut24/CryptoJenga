@@ -2,8 +2,7 @@ import { StackTowerWeb3 } from "./Main.js";
 
 export class EventsManager {
 
-    constructor(contract) {
-        this.initEventListeners(contract)
+    constructor() {
     }
 
     broadcastMessage(payload) {
@@ -23,7 +22,7 @@ export class EventsManager {
      * if there are clients then forward these messages to them.
      * @param {*} contract 
      */
-    initEventListeners(contract) {
+     setContractListeners(contract) {
         contract.events.RoundWinner({}, (function(error, events){
             let payload = {
                 eventName: events.event,

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
+using System.Threading.Tasks;
 
 #if UNITY_WEBGL
 public class WebLogin : MonoBehaviour
@@ -18,22 +19,40 @@ public class WebLogin : MonoBehaviour
 
     private string account;
 
-    public void OnPlay()
+    public InputField GameCodeInput;
+
+    public async void OnPlay()
     {
-        // pay entrance fee
-        // listen for paid fee event
-        // if fee paid call
-        Debug.Log("Enter Game");
-        EnterGame();
+        Debug.Log("Attempt to nter Game with code " + GameCodeInput.text);
+
+        string gameAddress = await CryptoJenga.joinGame(GameCodeInput.text);
+        if (gameAddress != null)
+        {
+            await ConnectToWallet();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
     }
 
-    public void EnterGame()
+    public async void OnCreateGame()
     {
-        Web3Connect();
-        OnConnected();
+        await ConnectToWallet();
+        SceneManager.LoadScene("ContractForm");
     }
 
-    async private void OnConnected()
+    async private Task<bool> ConnectToWallet()
+    {
+        string accountInfo = PlayerPrefs.GetString("Account", null);
+        Debug.Log("account info " + accountInfo);
+        //if (accountInfo == null)
+        //{
+            Web3Connect();
+            await OnConnected();
+        //}
+        Debug.Log("after on connected");
+        return true;
+    }
+
+    async private Task<bool> OnConnected()
     {
         Debug.Log("attempt to connect");
 
@@ -50,9 +69,7 @@ public class WebLogin : MonoBehaviour
         // reset login message
         SetConnectAccount("");
         // load next scene
-        Debug.Log("build index " + (SceneManager.GetActiveScene().buildIndex + 1));
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        return true;
     }
 
 

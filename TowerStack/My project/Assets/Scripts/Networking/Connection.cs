@@ -93,7 +93,6 @@ public class Connection : MonoBehaviour
                         LobbyInst.onGameState(events["currentState"]);
                         break;
                 }
-
             }
         };
         
@@ -110,6 +109,19 @@ public class Connection : MonoBehaviour
       websocket.DispatchMessageQueue();
 #endif
     }
+
+    // after a game has been created let ws server know so it can set up event listeners
+    public void SendCreateGameMessage(string gameAddress)
+    {
+        if (websocket.State == WebSocketState.Open)
+        {
+            websocket.SendText(gameAddress);
+        }
+        else {
+            Debug.Log("WARNING! Cannot send game address because the websocket is not open!");
+        }
+    }
+
 
     async void SendWebSocketMessage()
     {

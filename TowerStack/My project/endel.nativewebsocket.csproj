@@ -154,6 +154,7 @@
     <Compile Include="Assets/Plugins/Nethereum/Sha3Keccack.cs" />
     <Compile Include="Assets/Web3Unity/Scripts/Library/WebGL/Web3GL.cs" />
     <Compile Include="Assets/Web3Unity/Scripts/Prefabs/ERC721/ERC721OwnerOfBatchExample.cs" />
+    <Compile Include="Assets/Scripts/ContractForm.cs" />
     <Compile Include="Assets/Scripts/Contracts/GameContract.cs" />
     <Compile Include="Assets/Scripts/Lobby.cs" />
     <Compile Include="Assets/Plugins/Nethereum/EthECKeys.cs" />
