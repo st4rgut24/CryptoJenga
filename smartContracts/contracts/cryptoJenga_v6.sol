@@ -27,10 +27,8 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
     uint256 public s_requestId;
     uint256 public count = 0;
     uint256 public gameId = 0;
-    uint256 public vrfCalls = 0;
     uint256 public poolRewards;
     uint256 public finalBalance;
-    uint256 public testUpkeepCounter = 0;
     string public gameCode;
 
     address _priceFeedAddress = 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e;
@@ -44,7 +42,6 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
 
     uint256 totalWinnings;
     uint256 highestBlocksWon;
-    uint256[] public s_randomWords;
     address payable public gameWinner;
 
     using ECDSA for bytes32;
@@ -71,19 +68,18 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
 
     uint16 requestConfirmations = 3;
     uint32 numWords =  2;
-    uint32 callbackGasLimit = 200000;
+    uint32 callbackGasLimit = 20000;
 
-    event RequestedRandomness(uint256 requestId);
-    event BetMade(address _player, uint256 _currentRoundBetCount, uint256 _remainingBets);
-    event GameState(string _currentState);
-    event RoundStarted(uint256 _currentRoundNumber);
-    event RoundEnded(uint256 _currentRoundNumber);
-    event RevealStarted(uint256 _currentRoundNumber);
-    event RevealEnded(uint256 _currentRoundNumber);
-    event PlayerJoined(address _joinedPlayer);
-    event GameEnded(address _gameWinner, uint256 amountWon);
-    event RoundWinner(address _roundWinner, uint256 _rewardAmount);
-    event Test(address _testAddress);
+    event RequestedRandomness(uint256 requestId, address contractAddr);
+    event BetMade(address _player, uint256 _currentRoundBetCount, uint256 _remainingBets, address contractAddr);
+    event GameState(string _currentState, address contractAddr);
+    event RoundStarted(uint256 _currentRoundNumber, address contractAddr);
+    event RoundEnded(uint256 _currentRoundNumber, address contractAddr);
+    event RevealStarted(uint256 _currentRoundNumber, address contractAddr);
+    event RevealEnded(uint256 _currentRoundNumber, address contractAddr);
+    event PlayerJoined(address _joinedPlayer, address contractAddr);
+    event GameEnded(address _gameWinner, uint256 amountWon, address contractAddr);
+    event RoundWinner(address _roundWinner, uint256 _rewardAmount, address contractAddr);
 
     constructor(
         uint256 _USDTicketPrice, // to 18 places
@@ -148,7 +144,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         uint256 amountGotoWinningPool = msg.value * 90 / 100;
         GameWinningPool[gameId] += amountGotoWinningPool;
         GameFeePool[gameId] += (msg.value - amountGotoWinningPool);     
-        emit PlayerJoined(msg.sender);   
+        emit PlayerJoined(msg.sender, address(this));   
     }
 
     function bet(        
@@ -164,7 +160,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         betCounts[gameId][CurrentRound - 1][msg.sender] = currentRoundBetCount + betSize;
         players.push(payable(msg.sender)); // if player makes more than 1 bet, name is entered multiple times like lottery tickets
         
-        emit BetMade(msg.sender, currentRoundBetCount+betSize, remainingBets);
+        emit BetMade(msg.sender, currentRoundBetCount+betSize, remainingBets, address(this));
     }
 
     function startGame() public {
@@ -173,8 +169,8 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         game_state = GAME_STATE.OPEN;
         RoundStartTime = block.timestamp;
         CurrentRound = 1;
-        emit GameState("Open");
-        emit RoundStarted(CurrentRound);
+        emit GameState("Open", address(this));
+        emit RoundStarted(CurrentRound, address(this));
     }
 
     // for testing only. Reset the game state
@@ -218,10 +214,10 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         callbackGasLimit,
         numWords
         );
-        emit RequestedRandomness(requestId);
-        emit GameState("Calculating winner");
-        emit RoundEnded(1);
-        emit RevealStarted(1);
+        emit RequestedRandomness(requestId, address(this));
+        emit GameState("Calculating winner", address(this));
+        emit RoundEnded(1, address(this));
+        emit RevealStarted(1, address(this));
     }
 
     function fulfillRandomWords(
@@ -244,7 +240,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
             for (uint j=indexOfWinner;j<endIdx;j++){
                 uint256 bettorIdx = j % roundBetsLength;
                 blocksWon[players[bettorIdx]] += 1;
-                emit RoundWinner(players[bettorIdx], rewardAmount);
+                emit RoundWinner(players[bettorIdx], rewardAmount, address(this));
                 rewardAmount--;
             }            
         }
@@ -282,9 +278,9 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
             (bool success, ) = gameWinner.call{value: poolRewards}("");
             require(success, "The funds were not transferred at the end of the game");
             gameFactory.removeGame(gameCode);
-            emit RevealEnded(CurrentRound);
-            emit GameState("Closed");
-            emit GameEnded(gameWinner, totalWinnings);
+            emit RevealEnded(CurrentRound, address(this));
+            emit GameState("Closed", address(this));
+            emit GameEnded(gameWinner, totalWinnings, address(this));
         } 
         else
         {
@@ -292,7 +288,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
             CurrentRound += 1;
             RoundStartTime = block.timestamp;
             game_state = GAME_STATE.OPEN;
-            emit RoundStarted(CurrentRound);
+            emit RoundStarted(CurrentRound, address(this));
         } 
     }
 
@@ -349,7 +345,7 @@ interface GameFactoryInterface {
         uint256 _maxBets, 
         string memory _gameCode
     ) external returns (cryptoJengaV6);  
-    function getGameAddress(string memory _gameCode) external returns (address);
+    function getGameAddress(string memory _gameCode) external view returns (address);
 }
 
 contract GameFactory is GameFactoryInterface{
@@ -375,7 +371,7 @@ contract GameFactory is GameFactoryInterface{
         return gameAddress;
     }
 
-    function getGameAddress(string memory _gameCode) external override returns (address) {
+    function getGameAddress(string memory _gameCode) external view override returns (address) {
         require(games[_gameCode] != address(0x0000000000000000), "That game code does not exist");
         return games[_gameCode];
     }

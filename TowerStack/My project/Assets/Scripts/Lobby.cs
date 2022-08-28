@@ -40,6 +40,10 @@ public class Lobby : MonoBehaviour
         Debug.Log("current game state " + currentState);
         gameState = currentState;
         // when the game has started, allow the player to join
+        if (gameState == "Open")
+        {
+            StartGameBtn.gameObject.SetActive(false);
+        }
         if (isGameOpenForPlayer())
         {
             AdmitButton.SetActive(true);
