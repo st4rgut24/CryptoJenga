@@ -55,20 +55,22 @@ public class CryptoJenga: MonoBehaviour
         gameAddress = joinGameTask.Result;
 
         Debug.Log("game address is " + gameAddress);
-        connection.SendCreateGameMessage("{ \"name\": \"address\", \"value\": \"" + gameAddress + "\"}");
-        SceneManager.LoadScene("GameLogin");
+        //SceneManager.LoadScene("GameLogin");
+        SceneManager.LoadScene("Lobby");
     }
 
     public static async Task<string> joinGame(string gameCode)
     {
         try
         {
+            Connection connection = GameObject.Find("Network").GetComponent<Connection>();
             Debug.Log("get game address using code " + gameCode);
             string method = "getGameAddress";
             string args = "[\"" + gameCode + "\"]";
             string response = await EVM.Call(chain, network, gameFactoryAddress, gameFactoryAbi, method, args);
-            Debug.Log("Sucessfully Joining an existing game");
             gameAddress = response;
+            Debug.Log("Sucessfully Joining an existing game");
+            connection.SendInitGameMessage("{ \"name\": \"address\", \"value\": \"" + gameAddress + "\"}");
             return gameAddress;
         }
         catch (Exception e)
