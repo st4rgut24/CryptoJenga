@@ -64,7 +64,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
     }
 
     GAME_STATE public game_state;
-    uint64 s_subscriptionId = 72;
+    uint64 s_subscriptionId;
 
     uint16 requestConfirmations = 3;
     uint32 numWords =  2;
@@ -86,6 +86,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         uint256 _roundDuration,
         uint256 _totalRounds,
         uint256 _maxBets, 
+        uint64 _s_subscriptionId,
         string memory _gameCode,
         GameFactoryInterface gameFactoryAddress
     ) VRFConsumerBaseV2(_vrfCoordinator){
@@ -99,6 +100,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         TotalRounds = _totalRounds;
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);      
         gameFactory = gameFactoryAddress;
+        s_subscriptionId = _s_subscriptionId;
         gameCode = _gameCode;
     }
 
@@ -347,6 +349,7 @@ interface GameFactoryInterface {
         uint256 _roundDuration,
         uint256 _totalRounds,
         uint256 _maxBets, 
+        uint64 _s_subscriptionId,
         string memory _gameCode
     ) external returns (cryptoJengaV6);  
     function getGameAddress(string memory _gameCode) external view returns (address);
@@ -360,6 +363,7 @@ contract GameFactory is GameFactoryInterface{
         uint256 _roundDuration,
         uint256 _totalRounds,
         uint256 _maxBets, 
+        uint64 _s_subscriptionId,
         string memory _gameCode
     )
         external override
@@ -370,7 +374,7 @@ contract GameFactory is GameFactoryInterface{
         // From the JavaScript side, the return type
         // of this function is `address`, as this is
         // the closest type available in the ABI.
-        cryptoJengaV6 gameAddress = new cryptoJengaV6(_USDTicketPrice, _roundDuration, _totalRounds, _maxBets, _gameCode, this);
+        cryptoJengaV6 gameAddress = new cryptoJengaV6(_USDTicketPrice, _roundDuration, _totalRounds, _maxBets, _s_subscriptionId, _gameCode, this);
         games[_gameCode] = address(gameAddress);
         return gameAddress;
     }
