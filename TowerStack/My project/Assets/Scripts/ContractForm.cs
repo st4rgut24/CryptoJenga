@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 
 public class ContractForm : MonoBehaviour
 {
+    public GameObject LoadText;
+
     public InputField MaxBet;
     public InputField TotalRound;
     public InputField EntryFee;
@@ -18,6 +20,7 @@ public class ContractForm : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        LoadText.SetActive(false);
         connection = GameObject.Find("Network").GetComponent<Connection>();
     }
 
@@ -48,6 +51,7 @@ public class ContractForm : MonoBehaviour
                 }
                 if (connection != null)
                 {
+                    LoadText.SetActive(true);
                     StartCoroutine(CryptoJenga.createGame(connection, USDToWei, roundDuration, totalRound, maxBetCount, GameCode.text));
                 }
             }

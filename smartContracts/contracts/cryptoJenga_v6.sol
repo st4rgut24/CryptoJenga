@@ -68,7 +68,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
 
     uint16 requestConfirmations = 3;
     uint32 numWords =  2;
-    uint32 callbackGasLimit = 20000;
+    uint32 callbackGasLimit = 2000000;
 
     event RequestedRandomness(uint256 requestId, address contractAddr);
     event BetMade(address _player, uint256 _currentRoundBetCount, uint256 _remainingBets, address contractAddr);
@@ -100,6 +100,10 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);      
         gameFactory = gameFactoryAddress;
         gameCode = _gameCode;
+    }
+
+    function setCallbackGasLimit(uint32 _callbackGasLimit) public {
+        callbackGasLimit = _callbackGasLimit;
     }
 
     // get the state of the game
@@ -228,10 +232,10 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
             game_state == GAME_STATE.CHOOSEROUNDWINNER,
             "You aren't there yet!"
         );
-        require(players.length > 0 || CurrentRound == TotalRounds, "There must be bets in the round");
         uint256 _randomness = randomWords[0];
 
-        if (players.length > 0){
+        bool isBetting = players.length > 0;
+        if (isBetting){
             uint256 roundBetsLength = players.length; // 1
             uint256 indexOfWinner = _randomness % roundBetsLength; // 0 ... roundBetsLength - 1
             uint256 endIdx = roundBetsLength + indexOfWinner;
@@ -248,7 +252,7 @@ contract cryptoJengaV6 is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable 
         // // Reset
         players = new address payable[](0);
 
-        if ( CurrentRound == TotalRounds)
+        if ( CurrentRound == TotalRounds || !isBetting)
         {
             // End the game
             game_state = GAME_STATE.CLOSED;

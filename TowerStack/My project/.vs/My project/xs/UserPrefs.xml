@@ -1,11 +1,13 @@
 ﻿<Properties StartupConfiguration="{F2690B0C-6D99-9988-CF67-3E4EC8197F5E}|">
-  <MonoDevelop.Ide.ItemProperties.endel.nativewebsocket PreferredExecutionTarget="a84f7772-f617-4d13-aad1-ed0ce5bcbae2" />
+  <MonoDevelop.Ide.ItemProperties.endel.nativewebsocket PreferredExecutionTarget="235cfe3c-4de7-44d8-89b3-f0adb60c1a87" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Contracts/CryptoJenga.cs">
     <Files>
-      <File FileName="Assets/Scripts/Networking/Connection.cs" Line="24" Column="20" />
+      <File FileName="Assets/Scripts/Networking/Connection.cs" Line="103" Column="44" />
       <File FileName="Assets/Scripts/ContractForm.cs" />
-      <File FileName="Assets/Scripts/Contracts/CryptoJenga.cs" Line="62" Column="38" />
+      <File FileName="Assets/Scripts/Contracts/CryptoJenga.cs" Line="24" Column="50" />
       <File FileName="Assets/Web3Unity/Scripts/Scenes/WebLogin.cs" />
+      <File FileName="Assets/Scripts/GameManager.cs" />
+      <File FileName="Assets/Scripts/Lobby.cs" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
